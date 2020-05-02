@@ -49,7 +49,7 @@ int main()
 	BITMAPINFOHEADER bmp_i;
 	fread(&bmp_h, sizeof(BITMAPFILEHEADER), 1, f);
 	fread(&bmp_i, sizeof(BITMAPINFOHEADER), 1, f);
-
+	//test
 	return 0;
 }
 
