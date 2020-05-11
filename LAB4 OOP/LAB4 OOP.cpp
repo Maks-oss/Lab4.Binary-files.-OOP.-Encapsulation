@@ -72,8 +72,7 @@ void Picture::makeBigger(ifstream&file,int n, ofstream&out)
 	out.write((char*)&bmpinfo, sizeof(bmpinfo));
 
 	RGB* rgb = new RGB [width];
-	
-
+	cout << padding << " " << oldpadding << endl;
 	for (int i = 0; i < height; i+=1)
 	{
 		for (int k = 0; k < width; k+=1)
@@ -89,14 +88,10 @@ void Picture::makeBigger(ifstream&file,int n, ofstream&out)
 				{
 					out.write((char*)&rgb[kk], sizeof(RGB));
 				}
-				/*for (int p = 0; p < padding; p++)
-				{
-					out.write("0x00", sizeof(RGB));
-				}*/
 			}
 			for (int p = 0; p < padding; p++)
 			{
-				out.write("0x00", sizeof(RGB));
+				out.put(0x00);
 			}
 		}
 	}
@@ -109,7 +104,7 @@ int main()
 	Picture BMP(file);
 
 	//BMP.simpleout(file, out);
-	BMP.makeBigger(file, 5, out);
+	BMP.makeBigger(file, 7, out);
 
 	return 0;
 }
