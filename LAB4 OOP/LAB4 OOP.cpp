@@ -63,18 +63,16 @@ void Picture::makeBigger(ifstream&file,int n, ofstream&out)
 	//
 	bmpinfo.biWidth = bmpinfo.biWidth * n;
 	bmpinfo.biHeight = bmpinfo.biHeight * n;
-	//int oldpadding = (4 - (width * sizeof(RGB)) % 4) % 4;
+	int oldpadding = (4 - (width * sizeof(RGB)) % 4) % 4;
 	int padding = (4 - (bmpinfo.biWidth * sizeof(RGB)) % 4)%4;
-	bmpinfo.biSizeImage = ((bmpinfo.biWidth + padding) * sizeof(RGB)) + bmpinfo.biHeight;
+	bmpinfo.biSizeImage = (bmpinfo.biWidth * sizeof(RGB) + padding) * abs(bmpinfo.biHeight);
 	bmphead.bfSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + bmpinfo.biSizeImage;
 	//
 	out.write((char*)&bmphead, sizeof(bmphead));
 	out.write((char*)&bmpinfo, sizeof(bmpinfo));
 
 	RGB* rgb = new RGB [width];
-
-	cout << width << " " << height << "\n";
-	cout << bmpinfo.biWidth << " " << bmpinfo.biHeight << "\n";
+	
 
 	for (int i = 0; i < height; i+=1)
 	{
@@ -82,19 +80,23 @@ void Picture::makeBigger(ifstream&file,int n, ofstream&out)
 		{
 			file.read((char*)&rgb[k], sizeof(RGB));
 		}
+		file.seekg(oldpadding,file.cur);
 		for (int l = 0; l < n; l++)
 		{
-			int kk;
-			for (kk = 0; kk < width; kk += 1)
+			for (int kk = 0; kk < width; kk += 1)
 			{
 				for (int ll = 0; ll < n; ll++)
 				{
 					out.write((char*)&rgb[kk], sizeof(RGB));
 				}
-				for (int p = 0; p < padding; p++)
+				/*for (int p = 0; p < padding; p++)
 				{
 					out.write("0x00", sizeof(RGB));
-				}
+				}*/
+			}
+			for (int p = 0; p < padding; p++)
+			{
+				out.write("0x00", sizeof(RGB));
 			}
 		}
 	}
@@ -102,12 +104,12 @@ void Picture::makeBigger(ifstream&file,int n, ofstream&out)
 
 int main()
 {
-	ifstream file("d:\\bmpp.bmp", ios::binary);
+	ifstream file("d:\\bmp.bmp", ios::binary);
 	ofstream out("d:\\HAHA.bmp", ios::binary);
 	Picture BMP(file);
 
 	//BMP.simpleout(file, out);
-	BMP.makeBigger(file, 4, out);
+	BMP.makeBigger(file, 5, out);
 
 	return 0;
 }
