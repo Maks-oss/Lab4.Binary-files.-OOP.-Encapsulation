@@ -1,4 +1,4 @@
-﻿#include<fstream>
+﻿#include <fstream>
 #include <iostream>
 
 #pragma pack(1)
@@ -17,7 +17,6 @@ typedef struct
 	WORD    bfReserved2;
 	DWORD   bfOffBits;
 } BITMAPFILEHEADER;
-
 typedef struct
 {
 	DWORD biSize;
@@ -32,14 +31,12 @@ typedef struct
 	DWORD biClrUsed;
 	DWORD biClrImportant;
 } BITMAPINFOHEADER;
-
 typedef struct
 {
 	BYTE rgbBlue=0;
 	BYTE rgbGreen=0;
 	BYTE rgbRed=0;
 } RGB;
-
 class Picture
 {
 private:
@@ -50,50 +47,38 @@ public:
 	void makeBigger(ifstream& file, int n, ofstream&out);
 	void makeSmaller(ifstream& file, int n, ofstream& out);
 };
-
 Picture::Picture(ifstream&file)
 {
 	file.read((char*)&bmphead, sizeof(bmphead));
 	file.read((char*)&bmpinfo, sizeof(bmpinfo));
 }
-
-void Picture::makeBigger(ifstream&file,int n, ofstream&out)
+void Picture::makeBigger(ifstream&file, int n, ofstream&out)
 {
 	int width = bmpinfo.biWidth;
 	int height = bmpinfo.biHeight;
-	//
 	bmpinfo.biWidth = bmpinfo.biWidth * n;
 	bmpinfo.biHeight = bmpinfo.biHeight * n;
 	int oldpadding = (4 - (width * sizeof(RGB)) % 4) % 4;
 	int padding = (4 - (bmpinfo.biWidth * sizeof(RGB)) % 4)%4;
 	bmpinfo.biSizeImage = (bmpinfo.biWidth * sizeof(RGB) + padding) * abs(bmpinfo.biHeight);
 	bmphead.bfSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + bmpinfo.biSizeImage;
-	//
 	out.write((char*)&bmphead, sizeof(bmphead));
 	out.write((char*)&bmpinfo, sizeof(bmpinfo));
-
 	RGB* rgb = new RGB [width];
-	//cout << padding << " " << oldpadding << endl;
 	for (int i = 0; i < height; i+=1)
 	{
-		for (int k = 0; k < width; k+=1)
-		{
-			file.read((char*)&rgb[k], sizeof(RGB));
-		}
+		for (int k = 0; k < width; k++) file.read((char*)&rgb[k], sizeof(RGB));
 		file.seekg(oldpadding,file.cur);
 		for (int l = 0; l < n; l++)
 		{
-			for (int kk = 0; kk < width; kk += 1)
+			for (int kk = 0; kk < width; kk++)
 			{
 				for (int ll = 0; ll < n; ll++)
 				{
 					out.write((char*)&rgb[kk], sizeof(RGB));
 				}
 			}
-			for (int p = 0; p < padding; p++)
-			{
-				out.put(0x00);
-			}
+			for (int p = 0; p < padding; p++) out.put(0x00);
 		}
 	}
 }
@@ -101,14 +86,12 @@ void Picture::makeSmaller(ifstream& file, int n, ofstream& out)
 {
 	int width = bmpinfo.biWidth;
 	int height = bmpinfo.biHeight;
-	//
 	bmpinfo.biWidth = bmpinfo.biWidth/n;
 	bmpinfo.biHeight = bmpinfo.biHeight/n;
 	int oldpadding = (4 - (width * sizeof(RGB)) % 4) % 4;
 	int padding = (4 - (bmpinfo.biWidth * sizeof(RGB)) % 4) % 4;
 	bmpinfo.biSizeImage = (bmpinfo.biWidth * sizeof(RGB) + padding) * abs(bmpinfo.biHeight);
 	bmphead.bfSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + bmpinfo.biSizeImage;
-	//
 	out.write((char*)&bmphead, sizeof(bmphead));
 	out.write((char*)&bmpinfo, sizeof(bmpinfo));
 	RGB** rgb = new RGB* [height];
@@ -123,7 +106,6 @@ void Picture::makeSmaller(ifstream& file, int n, ofstream& out)
 	}
 	RGB** newrgb = new RGB* [bmpinfo.biHeight];
 	for (int i = 0; i < bmpinfo.biHeight; i++) newrgb[i] = new RGB[bmpinfo.biWidth];
-
 	for (int i = 0; i < height-height%n; i++)
 	{
 		for (int j = 0; j < width-width%n; j++)
@@ -141,23 +123,61 @@ void Picture::makeSmaller(ifstream& file, int n, ofstream& out)
 		}
 		for (int p = 0; p < padding; p++)
 		{
-			out.put(0x00);
+			out.put(0);
 		}
 	}
 }
-int main()
+int main(int argc, char*argv[])
 {
-	ifstream file("d:\\panda.bmp", ios::binary);
-	ofstream out("d:\\HAHA.bmp", ios::binary);
-	Picture BMP(file);
-	BMP.makeSmaller(file, 10, out);
-	file.close();
-	out.close();
-
-	ifstream tfile("d:\\HAHA.bmp", ios::binary);
-	ofstream tout("d:\\HAHA2.bmp", ios::binary);
-	Picture tBMP(tfile);
-	tBMP.makeBigger(tfile, 10, tout);
-	return 0;
+	string inputfile=argv[1];
+	string outputfile=argv[2];
+	double n = atof(argv[3]);///
+	ifstream file(inputfile, ios::binary);
+	if (n == int(n))
+	{
+		ofstream out(outputfile, ios::binary);
+		Picture BMP(file);
+		BMP.makeBigger(file, n, out);
+		file.close();
+		out.close();
+		printf("\nBOLSHE!");
+		return 1;
+	}
+	else if (n < 1)
+	{
+		ofstream out("help.bmp", ios::binary);
+		Picture BMP(file);
+		int nn = round(n * 10);
+		BMP.makeBigger(file, nn, out);
+		file.close();
+		out.close();
+		ifstream tfile("help.bmp", ios::binary);
+		ofstream tout(outputfile, ios::binary);
+		Picture tBMP(tfile);
+		tBMP.makeSmaller(tfile, 10, tout);
+		tfile.close();
+		tout.close();
+		printf("\nMENSHE");
+		return 2;
+	}
+	else 
+	{
+		ofstream out("help.bmp", ios::binary);
+		Picture BMP(file);
+		int ni = int(n)+1;
+		n = n/ni;
+		int nn = round(n * 10);
+		BMP.makeBigger(file, ni*nn, out);
+		file.close();
+		out.close();
+		ifstream tfile("help.bmp", ios::binary);
+		ofstream tout(outputfile, ios::binary);
+		Picture tBMP(tfile);
+		tBMP.makeSmaller(tfile, 10, tout);
+		tfile.close();
+		tout.close();
+		printf("BOLSHE(no ne celoe)");
+		return 3;
+	}
+	return -1;
 }
-
