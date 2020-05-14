@@ -111,6 +111,7 @@ int main(int argc, char*argv[])
 		outputfile=argv[2];
 		n = atof(argv[3]);///
 	}
+	if (n <= 0) { printf("\n [!] Wrond n"); return -1; }
 	ifstream file(inputfile, ios::binary);
 	ofstream out(outputfile, ios::binary);
 	Picture BMP(file);
